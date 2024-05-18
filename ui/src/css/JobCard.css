@@ -1,0 +1,72 @@
+.ad-container {
+    max-width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.ad-title {
+    color: #333;
+    font-size: 24px;
+}
+
+.ad-date {
+    font-size: 14px;
+    color: #666;
+}
+
+.ad-link {
+    display: block;
+    margin: 10px 0;
+    color: #1a0dab;
+    text-decoration: none;
+}
+
+.input-group {
+    margin: 10px 0;
+}
+
+.input-text {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.checkbox-label {
+    display: block;
+    margin: 10px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.checkbox-input {
+    margin-right: 5px;
+}
+
+.update-button {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.update-button:hover {
+    background-color: #45a049;
+}
+
+.ad-description {
+    margin-top: 15px;
+    line-height: 1.5;
+    color: #333;
+    white-space: pre-line;
+    text-align: justify;
+}
