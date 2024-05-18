@@ -17,6 +17,20 @@ export const fetchJobs = async (page: number, pageSize: number) => {
     }
 };
 
+export const fetchCount = async () => {
+    try {
+        const response = await axios.get('/qualified/count');
+        if (response.status !== 200) {
+            console.error(response.data);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching job count', error);
+        throw error;
+    }
+};
+
 const UPDATE_URL = "/job";
 export const updateJob = async (job: JobAd) => {
     try {
