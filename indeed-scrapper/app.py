@@ -33,6 +33,8 @@ WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
 )
 
+job_statuses = []
+
 def post_job(job_id, job_title, job_description):
     job_details = {
         "id": job_id,
@@ -41,10 +43,22 @@ def post_job(job_id, job_title, job_description):
         "website": "indeed.com",
     }
     response = requests.post("http://localhost:5995/job", json=job_details)
+    failure_rate = 0
     if response.status_code == 201:
         print("Job posted successfully")
+        job_statuses.append(True)
     else:
         print("Failed to post job")
+        job_statuses.append(False)
+
+    if len(job_statuses) > 10:
+        job_statuses.pop(0)
+        failure_rate = job_statuses.count(False) / len(job_statuses)
+
+    if failure_rate >= 0.7:
+        print("Failure rate is too high. Stopping the process.")
+        driver.quit()
+        exit(1)
         
 while True:
     job_links = driver.find_elements(By.CSS_SELECTOR, 'a[data-jk]')
