@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { JobAd } from '../types/JobAd';
 import { updateJob } from '../services/apiService';
 import '../css/JobCard.css';
@@ -13,6 +13,7 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
     const [isNotQualifiedReason, setIsNotQualifiedReason] = useState('');
     const [dateApplied, setDateApplied] = useState<Date | null>(null);
     const [isCollapsed, setIsCollapsed] = useState(true);
+    const accordionTitleRef = useRef<HTMLHeadingElement>(null);
 
     const handleUpdateJob = () => {
         setDateApplied(new Date());
@@ -28,15 +29,16 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
     };
 
     const toggleCollapse = () => {
+        accordionTitleRef.current?.classList.toggle('collapsed');
         setIsCollapsed(!isCollapsed);
     };
 
     return (
         <div className="ad-container">
-            <h2 className="ad-title" onClick={toggleCollapse}>{Ad.title}</h2>
+            <h2 ref={accordionTitleRef} className="ad-title accordion-title" onClick={toggleCollapse}>{Ad.title}</h2>
             {!isCollapsed && (
                 <>
-                    <p className="ad-date">Added on: {new Date(Ad.date_added).toLocaleDateString()}</p>       
+                    <p className="ad-date">Added on: {new Date(Ad.date_added).toLocaleDateString()}</p>
                     <a className="ad-link" href={`https://www.indeed.com/viewjob?jk=${Ad.id}`} target="_blank" rel="noreferrer">Link to job</a>
                     <div className="input-group">
                         <input

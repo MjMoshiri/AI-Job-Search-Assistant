@@ -70,3 +70,12 @@
     white-space: pre-line;
     text-align: justify;
 }
+
+.accordion-title::after {
+    content: "\25BC";
+    float: right;
+}
+
+.accordion-title.collapsed::after {
+    content: "\25B2";
+}
