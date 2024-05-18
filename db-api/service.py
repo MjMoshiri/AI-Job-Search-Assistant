@@ -71,4 +71,25 @@ def get_unprocessed(n):
         return None
     finally:
         session.close()
+        
 
+def get_qualified(page, page_size):
+    session = Session()
+    try:
+        offset = (page - 1) * page_size
+        job_applications = session.query(JobApplication).filter(JobApplication.is_qualified == True, JobApplication.has_applied == None).offset(offset).limit(page_size).all()
+        return job_applications
+    except Exception:
+        return None
+    finally:
+        session.close()
+
+def count_qualified():
+    session = Session()
+    try:
+        count = session.query(JobApplication).filter(JobApplication.is_qualified == True, JobApplication.has_applied == None).count()
+        return count
+    except Exception:
+        return None
+    finally:
+        session.close()
