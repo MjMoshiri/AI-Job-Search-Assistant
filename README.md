@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>my Job Seeking Assistant</h1>'
+  <h1>my Job Seeking Assistant</h1>
   <br>
   <img src="image.png" width="300" height="300">
   <br><br>
