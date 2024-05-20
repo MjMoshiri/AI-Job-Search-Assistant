@@ -7,26 +7,16 @@ from service import (
     get_recent,
     get_unprocessed,
     get_qualified,
-    count_qualified
+    count_qualified,
 )
 from typing import Dict
-import time , flask_cors
-
 
 app = Flask(__name__)
-flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
+
+
 with app.app_context():
-    attempts = 0
-    while attempts < 10:
-        try:
-            create_tables()
-            break
-        except Exception as e:
-            print(f"An error occurred: {e}. Retrying in 5 seconds...")
-            time.sleep(5)
-            attempts += 1
-    if attempts == 10:
-        print("Max attempts reached. Stopping execution.")
+    create_tables()
+
 
 
 @app.route("/job/<string:job_id>", methods=["PUT"])
@@ -89,7 +79,8 @@ def get_qualified_jobs(page: int, page_size: int) -> jsonify:
         return jsonify([job.to_json() for job in jobs]), 200
     except Exception as e:
         return {"error": f"An error occurred: {str(e)}"}, 500
-    
+
+
 @app.route("/qualified/count", methods=["GET"])
 def get_qualified_count() -> jsonify:
     try:
@@ -97,6 +88,7 @@ def get_qualified_count() -> jsonify:
         return jsonify(count), 200
     except Exception as e:
         return {"error": f"An error occurred: {str(e)}"}, 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5995, host="0.0.0.0")

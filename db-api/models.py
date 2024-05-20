@@ -12,16 +12,14 @@ class JobApplication(Base):
     id = Column(String, primary_key=True)
     date_added = Column(DateTime, default=datetime.now)
     description = Column(String)
-    website = Column(String)
+    link = Column(String)
     is_qualified = Column(Boolean)
     is_not_qualified_reason = Column(String)
-    is_a_match = Column(Integer)
     has_applied = Column(Boolean)
     resume_version = Column(String)
     title = Column(String)
     company = Column(String)
     date_applied = Column(DateTime)
-    is_duplicate = Column(Boolean)
 
     def to_json(self):
         job_dict = {}
