@@ -10,9 +10,9 @@ from service import (
     count_qualified,
 )
 from typing import Dict
-
+import flask_cors
 app = Flask(__name__)
-
+flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
 
 with app.app_context():
     create_tables()
