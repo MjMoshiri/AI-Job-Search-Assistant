@@ -17,30 +17,31 @@ driver.get("https://www.indeed.com")
 
 expected_samesite_values = ["Strict", "Lax", "None"]
 
-with open('indeed-scrapper/cookies.json', 'r') as file:
+with open("indeed-scrapper/cookies.json", "r") as file:
     cookies = json.load(file)
     for cookie in cookies:
-        if cookie.get('sameSite') not in expected_samesite_values:
-            cookie['sameSite'] = 'None'
+        if cookie.get("sameSite") not in expected_samesite_values:
+            cookie["sameSite"] = "None"
     for cookie in cookies:
         driver.add_cookie(cookie)
-        
+
 driver.get(url)
 
 time.sleep(random.randint(2, 8))
-
 WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
 )
 
 job_statuses = []
 
-def post_job(job_id, job_title, job_description):
+
+def post_job(job_id, job_title, job_description, link, company):
     job_details = {
         "id": job_id,
         "description": job_description,
         "title": job_title,
-        "website": "indeed.com",
+        "link": link,
+        "company": company,
     }
     response = requests.post("http://localhost:5995/job", json=job_details)
     failure_rate = 0
@@ -59,24 +60,39 @@ def post_job(job_id, job_title, job_description):
         print("Failure rate is too high. Stopping the process.")
         driver.quit()
         exit(1)
-        
+
+
 while True:
-    job_links = driver.find_elements(By.CSS_SELECTOR, 'a[data-jk]')
+    job_links = driver.find_elements(By.CSS_SELECTOR, "a[data-jk]")
     for job_link in job_links:
-        job_id = job_link.get_attribute('data-jk')
-        job_title = job_link.find_element(By.CSS_SELECTOR, 'span[title]').get_attribute('title')
+        job_id = job_link.get_attribute("data-jk")
+        apply_link = f"https://www.indeed.com/applystart?jk={job_id}"
+        job_title = job_link.find_element(By.CSS_SELECTOR, "span[title]").get_attribute(
+            "title"
+        )
         job_link.click()
         time.sleep(random.randint(2, 8))
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "jobDescriptionText")))
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "jobDescriptionText"))
+        )
+        company_name_element = driver.find_element(
+            By.CSS_SELECTOR, 'div[data-testid="inlineHeader-companyName"]'
+        )
+        company_name = company_name_element.find_element(By.CSS_SELECTOR, "a").text
         job_description = driver.find_element(By.ID, "jobDescriptionText").text
-        post_job(job_id, job_title, job_description)
+        post_job(job_id, job_title, job_description, apply_link, company_name)
     try:
-        next_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'a[data-testid="pagination-page-next"]')))
+        next_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, 'a[data-testid="pagination-page-next"]')
+            )
+        )
         next_button.click()
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[data-jk]')))
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
+        )
     except Exception as e:
         print("Reached the end of the pages or an error occurred: ", e)
         break
-    
-driver.quit()
 
+driver.quit()
