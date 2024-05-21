@@ -6,6 +6,12 @@
     border-radius: 8px;
     background-color: #f9f9f9;
 }
+.checkbox-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
 .ad-title {
     color: #333;
@@ -38,7 +44,6 @@
 
 .checkbox-label {
     display: block;
-    margin: 10px 0;
     color: #333;
     font-size: 16px;
 }

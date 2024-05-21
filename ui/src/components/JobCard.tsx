@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { JobAd } from '../types/JobAd';
+import { Reason } from '../types/Reason'; // Ensure Reason is correctly imported as an array or adjust accordingly
 import { updateJob } from '../services/apiService';
 import '../css/JobCard.css';
 
@@ -10,7 +11,7 @@ interface JobCardProps {
 const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
     const [resumeVersion, setResumeVersion] = useState('');
     const [isQualified, setIsQualified] = useState(Ad.is_qualified);
-    const [isNotQualifiedReason, setIsNotQualifiedReason] = useState('');
+    const [selectedReasons, setSelectedReasons] = useState<string[]>(Ad.is_not_qualified_reason ? Ad.is_not_qualified_reason.split(', ') : []);
     const [dateApplied, setDateApplied] = useState<Date | null>(null);
     const [isCollapsed, setIsCollapsed] = useState(true);
     const accordionTitleRef = useRef<HTMLHeadingElement>(null);
@@ -21,11 +22,19 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
             ...Ad,
             resume_version: resumeVersion,
             is_qualified: isQualified,
-            has_applied: isQualified,
+            has_applied: isQualified && selectedReasons.length === 0,
             date_applied: dateApplied!,
-            ...(isNotQualifiedReason && { is_not_qualified_reason: isNotQualifiedReason }),
+            is_not_qualified_reason: selectedReasons.join(', ')
         };
         updateJob(updatedJob);
+    };
+
+    const handleReasonChange = (reason: string, checked: boolean) => {
+        if (checked) {
+            setSelectedReasons(prev => [...prev, reason]);
+        } else {
+            setSelectedReasons(prev => prev.filter(r => r !== reason));
+        }
     };
 
     const toggleCollapse = () => {
@@ -35,11 +44,11 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
 
     return (
         <div className="ad-container">
-            <h2 ref={accordionTitleRef} className="ad-title accordion-title" onClick={toggleCollapse}>{Ad.title}</h2>
+            <h2 ref={accordionTitleRef} className="ad-title accordion-title" onClick={toggleCollapse}>{Ad.title}, {Ad.company}</h2>
             {!isCollapsed && (
                 <>
                     <p className="ad-date">Added on: {new Date(Ad.date_added).toLocaleDateString()}</p>
-                    <a className="ad-link" href={`https://www.indeed.com/viewjob?jk=${Ad.id}`} target="_blank" rel="noreferrer">Link to job</a>
+                    <a className="ad-link" href={Ad.link} target="_blank" rel="noreferrer">Link to job</a>
                     <div className="input-group">
                         <input
                             className="input-text"
@@ -56,17 +65,22 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
                             checked={isQualified}
                             onChange={(e) => setIsQualified(e.target.checked)}
                         />
-                        Is Qualified
-                    </label>
-                    <div className="input-group">
-                        <input
-                            className="input-text"
-                            type="text"
-                            value={isNotQualifiedReason}
-                            onChange={(e) => setIsNotQualifiedReason(e.target.value)}
-                            placeholder="Reason for not being qualified"
-                        />
+                        Qualified
+                    </label><br />
+                    <div className="checkbox-container">
+                        Rejected for: 
+                        {Reason.map((reason) => (
+                            <label key={reason} className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedReasons.includes(reason)}
+                                    onChange={(e) => handleReasonChange(reason, e.target.checked)}
+                                />
+                                {reason}
+                            </label>
+                        ))}
                     </div>
+                    <br />
                     <button className="update-button" onClick={handleUpdateJob}>Update Job</button>
                     <p className="ad-description">{Ad.description}</p>
                 </>
