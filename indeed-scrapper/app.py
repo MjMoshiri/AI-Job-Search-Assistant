@@ -50,7 +50,7 @@ def main():
         EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
     )
 
-    job_statuses = []
+    failure_count = 0
     while True:
         job_links = driver.find_elements(By.CSS_SELECTOR, "a[data-jk]")
         for job_link in job_links:
@@ -70,14 +70,14 @@ def main():
             company_name = company_name_element.text
             job_description = driver.find_element(By.ID, "jobDescriptionText").text
             success = post_job(job_id, job_title, job_description, apply_link, company_name)
-            job_statuses.append(success)
-            if len(job_statuses) > 10:
-                job_statuses.pop(0)
-                failure_rate = job_statuses.count(False) / len(job_statuses)
-                if failure_rate >= 0.7:
-                    print("Failure rate is too high. Stopping the process.")
-                    driver.quit()
-                    exit(1)
+            if not success:
+                failure_count += 1
+            else:
+                failure_count = 0
+            if failure_count >= 10:
+                print("Failed to post 10 jobs. Exiting...")
+                driver.quit()
+                return
         try:
             next_button = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable(
