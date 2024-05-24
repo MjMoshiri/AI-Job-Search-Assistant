@@ -33,7 +33,7 @@ def process_job(job, evaluation_result):
 
 
 def process_jobs(job_count):
-    user_data = "Please review the job description and answer with 'Yes' if it meets all the following conditions: no PhD required, not more than 2 years of experience as a minimum, not an internship, located in California or allows remote work, and not a senior-level role. If any condition is not met, respond with 'No'. The response MUST be a single string containing either 'Yes' or 'No'."
+    user_data = "Please review the job description and answer with 'Yes' if it meets all the following conditions: no PhD required, not more than 2 years of experience as a minimum, located in California or allows remote work, and not a senior-level role. If any condition is not met, respond with 'No'. The response MUST be a single string containing either 'Yes' or 'No'."
     while True:
         job_data = fetch_job_description(job_count)
         for job in job_data:
