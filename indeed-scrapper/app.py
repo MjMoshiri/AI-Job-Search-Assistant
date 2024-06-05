@@ -46,7 +46,7 @@ def main():
     load_cookies(driver)
     driver.get(URL)
     time.sleep(random.randint(2, 8))
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
     )
 
