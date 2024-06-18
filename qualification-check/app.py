@@ -24,7 +24,7 @@ def evaluate_job(description):
 
 
 def process_job(job, evaluation_result):
-    job["is_qualified"] = evaluation_result == "Yes" or evaluation_result == "Yes."
+    job["is_qualified"] = evaluation_result == "Yes" or evaluation_result == "Yes." or evaluation_result == "'Yes'"
     job["website"] = job.get("website", "indeed.com")
     status = "Qualified" if job["is_qualified"] else "Not qualified"
     print(f"Job Title: {job['title']} processed. {status}.")
@@ -43,7 +43,7 @@ def process_jobs(job_count):
                 f"{user_data})\nJob Title: {job_title}\nJob Description: {job_description} + The Answer is: "
             )
             answer = evaluation_result.split(":")[-1].strip()
-            if answer in ["Yes", "Yes.", "No", "No."]:
+            if answer in ["Yes", "Yes.", "'Yes'", "No", "No.", "'No'"]:
                 process_job(job, answer)
             else:
                 print(
