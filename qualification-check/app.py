@@ -32,16 +32,28 @@ def process_job(job, evaluation_result):
     time.sleep(2.5)
 
 
+user_data = "Please review the job description and answer with 'Yes' if it meets all the following conditions: no PhD required, not more than 2 years of experience as a minimum, located in California or allows remote work, and not a senior-level role. If any condition is not met, respond with 'No'. The response MUST be a single string containing either Yes or No ."
+max_attempts = 5
 def process_jobs(job_count):
-    user_data = "Please review the job description and answer with 'Yes' if it meets all the following conditions: no PhD required, not more than 2 years of experience as a minimum, located in California or allows remote work, and not a senior-level role. If any condition is not met, respond with 'No'. The response MUST be a single string containing either Yes or No ."
     while True:
         job_data = fetch_job_description(job_count)
         for job in job_data:
             job_title = job.get("title", "")
             job_description = job.get("description", "")
-            evaluation_result = evaluate_job(
-                f"{user_data})\nJob Title: {job_title}\nJob Description: \"{job_description}\" + The Answer is: "
-            )
+            attempt = 0
+            while attempt < max_attempts:
+                try:
+                    evaluation_result = evaluate_job(
+                        f"{user_data})\nJob Title: {job_title}\nJob Description: \"{job_description}\" + The Answer is: "
+                    )
+                    break
+                except Exception:
+                    attempt += 1
+                    if attempt<max_attempts:
+                        time.sleep(2)
+            else:
+                print("Server error. Please try again later.")
+                continue
             answer = evaluation_result.split(":")[-1].strip()
             if answer in ["Yes", "Yes.", "'Yes'", "No", "No.", "'No'"]:
                 process_job(job, answer)
