@@ -5,4 +5,4 @@ COPY . /app
 
 RUN pip install Flask sqlalchemy psycopg2-binary Flask-Cors alembic
 
-CMD sh -c 'alembic upgrade head && python api.py'
+CMD sh -c 'python api.py'
