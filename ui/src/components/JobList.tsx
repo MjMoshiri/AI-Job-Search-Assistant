@@ -8,6 +8,9 @@ const JobList: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [count, setCount] = useState(0);
+    const handleRemoveJob = (jobId: string) => {
+        setJobs(currentJobs => currentJobs.filter(job => job.id !== jobId));
+    };
     useEffect(() => {
         const loadJobs = async () => {
             setLoading(true);
@@ -42,7 +45,9 @@ const JobList: React.FC = () => {
                 <span style={{ margin: '0 10px' }}>Page: {page} / {count}</span>
                 <button onClick={() => setPage(old => old + 1)}>Next</button>
             </div>
-            {jobs.map(job => <JobCard key={job.id} job={job} />)}
+            {jobs.map(job => (
+                <JobCard key={job.id} job={job} onRemove={handleRemoveJob} />
+                ))}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
                 <button onClick={() => setPage(old => Math.max(old - 1, 1))}>Previous</button>
                 <span style={{ margin: '0 10px' }}>Page: {page} / {count}</span>

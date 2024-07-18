@@ -6,9 +6,10 @@ import '../css/JobCard.css';
 
 interface JobCardProps {
     job: JobAd;
+    onRemove: (jobId: string) => void;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
+const JobCard: React.FC<JobCardProps> = ({ job: Ad , onRemove }) => {
     const [resumeVersion, setResumeVersion] = useState('');
     const [isQualified, setIsQualified] = useState(Ad.is_qualified);
     const [selectedReasons, setSelectedReasons] = useState<string[]>(Ad.is_not_qualified_reason ? Ad.is_not_qualified_reason.split(', ') : []);
@@ -27,6 +28,8 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
             is_not_qualified_reason: selectedReasons.join(', ')
         };
         updateJob(updatedJob);
+        toggleCollapse();
+        onRemove(Ad.id);
     };
 
     const handleReasonChange = (reason: string, checked: boolean) => {
@@ -81,7 +84,7 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad }) => {
                         ))}
                     </div>
                     <br />
-                    <button className="update-button" onClick={handleUpdateJob}>Update Job</button>
+                    <button className="update-button" onClick={handleUpdateJob}>Process</button>
                     <p className="ad-description">{Ad.description}</p>
                 </>
             )}
