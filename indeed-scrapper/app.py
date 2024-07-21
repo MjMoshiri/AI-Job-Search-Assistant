@@ -46,12 +46,12 @@ def main():
     load_cookies(driver)
     driver.get(URL)
     time.sleep(random.randint(2, 8))
-    WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
-    )
-
     failure_count = 0
+    page = 0
     while True:
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "a[data-jk]"))
+        )
         job_links = driver.find_elements(By.CSS_SELECTOR, "a[data-jk]")
         for job_link in job_links:
             job_id = job_link.get_attribute("data-jk")
@@ -78,21 +78,8 @@ def main():
                 print("Failed to post 10 jobs. Exiting...")
                 driver.quit()
                 return
-        try:
-            next_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, 'a[data-testid="pagination-page-next"]')
-                )
-            )
-            next_button.click()
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-jk]"))
-            )
-        except Exception as e:
-            print("Reached the end of the pages or an error occurred: ", e)
-            break
-
-    driver.quit()
+        page += 1
+        driver.get(URL + "&start=" + str(page * 10))
 
 if __name__ == "__main__":
     main()
