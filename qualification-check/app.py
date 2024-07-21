@@ -63,6 +63,7 @@ def process_jobs(job_count):
                 )
                 continue
         if len(job_data) < job_count:
+            print("No more jobs to process. Exiting...")
             break
 
 
