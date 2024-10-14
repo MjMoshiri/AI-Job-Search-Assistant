@@ -51,11 +51,6 @@ To run the UI, navigate to the `ui` directory and run the following command:
 npm start
 ```
 
-
-## Contributing
-
-Contributions are welcome! Please see the [HOW_TO_CONTRIBUTE.md](HOW_TO_CONTRIBUTE.md) for a list of priorities and guidelines for contributing to this project.
-
 ## License
 
 This project is licensed under a permissive license that allows usage and modification as long as credit is given to the original creator. 
