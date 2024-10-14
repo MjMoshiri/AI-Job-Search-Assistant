@@ -65,7 +65,7 @@ def get_recent(n):
 def get_unprocessed(n):
     session = Session()
     try:
-        job_applications = session.query(JobApplication).filter(JobApplication.is_qualified == None).limit(n).all()
+        job_applications = session.query(JobApplication).filter(JobApplication.is_processed == False).limit(n).all()
         return job_applications
     except Exception:
         return None

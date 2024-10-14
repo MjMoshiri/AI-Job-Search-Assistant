@@ -17,7 +17,7 @@
     - POSTGRES_USER
     - POSTGRES_PASSWORD
     - POSTGRES_DB
-    - HF_TOKEN
+    - OPENAI_API_KEY
 
 - **Docker**: Utilizes Docker to run the database. Ensure Docker is installed and use the command:
     ```bash
@@ -27,7 +27,7 @@ to start the database.
 
 - **/indeed-scrapper**: An exemplary scrapper that fetches job data. Future updates might include additional scrapers for other platforms.
 
-- **/qualification-checker**: A Python script that uses the HuggingFace LLM to review job descriptions stored in the database to determine if they meet the specified criteria. (HF_TOKEN required, search for "HuggingFace API token" to get one.)
+- **/qualification-checker**: A Python script that uses the OpenAI API to determine if a job listing qualifies under the specified criteria.
 
 - **/ui**: A React-based UI that displays the jobs that qualify under the specified criteria.
 

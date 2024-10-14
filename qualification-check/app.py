@@ -1,13 +1,24 @@
 import requests
-import dotenv, os
+import dotenv
+import os
 import time
+from openai import OpenAI
+import json
+from pydantic import BaseModel
 
 dotenv.load_dotenv()
-API_URL = (
-    "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct"
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(
+    api_key=OPENAI_API_KEY,
 )
-HF_TOKEN = os.getenv("HF_TOKEN")
-headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+
+
+
+class JobEvaluation(BaseModel):
+    reasoning: str
+    is_qualified: bool
 
 
 def fetch_job_description(job_count):
@@ -16,24 +27,45 @@ def fetch_job_description(job_count):
 
 
 def evaluate_job(description):
-    payload = {"inputs": description, "parameters": {"wait_for_model": True}}
-    response = requests.post(API_URL, headers=headers, json=payload)
-    result = response.json()
-    generated_text = result[0]["generated_text"]
-    return generated_text
+    response = client.beta.chat.completions.parse(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": description,
+            }
+        ],
+        response_format=JobEvaluation,
+    )
+    return response.choices[0].message.parsed
 
 
 def process_job(job, evaluation_result):
-    job["is_qualified"] = evaluation_result == "Yes" or evaluation_result == "Yes." or evaluation_result == "'Yes'"
-    job["website"] = job.get("website", "indeed.com")
+    job["is_qualified"] = evaluation_result.is_qualified
+    job["is_processed"] = True
+    job["model_reasoning"] = evaluation_result.reasoning
     status = "Qualified" if job["is_qualified"] else "Not qualified"
-    print(f"Job Title: {job['title']} processed. {status}.")
+    print(f"Job Title: {job['title']} processed. {status}. Reason: {job['model_reasoning']}")
     requests.put(f"http://localhost:5995/job/{job['id']}", json=job)
-    time.sleep(2.5)
+    time.sleep(0.2)
 
 
-user_data = "Please review the job description and answer with 'Yes' if it meets all the following conditions: no PhD required, not more than 2 years of experience as a minimum, located in California or allows remote work, and not a senior-level role. If any condition is not met, respond with 'No'. The response MUST be a single string containing either Yes or No ."
+user_data = """
+You will be given a job description. Review the job description and return a JSON object with two keys:
+1. 'reasoning': A string providing a detailed explanation of why the job is or is not qualified based on the given conditions.
+2. 'is_qualified': A boolean indicating if the job is qualified.
+
+The qualification criteria are as follows:
+- A PhD is not required.
+- The role is not a management position or senior position.
+- If a minimum experience is required, it must be less than 2 years.
+- The job must be located in California or allow for remote work.
+
+Please assess the job description carefully and ensure the reasoning covers all aspects of the criteria provided.
+"""
 max_attempts = 5
+
+
 def process_jobs(job_count):
     while True:
         job_data = fetch_job_description(job_count)
@@ -44,24 +76,31 @@ def process_jobs(job_count):
             while attempt < max_attempts:
                 try:
                     evaluation_result = evaluate_job(
-                        f"{user_data})\nJob Title: {job_title}\nJob Description: \"{job_description}\" + The Answer is: "
+                        f'{user_data}\n ## JOB INFO ## Job Title: {job_title}\nJob Description: "{job_description}"'
                     )
                     break
-                except Exception:
+                except Exception as e:
+                    print(e)
                     attempt += 1
-                    if attempt<max_attempts:
+                    if attempt < max_attempts:
                         time.sleep(2)
             else:
                 print("Server error. Please try again later.")
                 continue
-            answer = evaluation_result.split(":")[-1].strip()
-            if answer in ["Yes", "Yes.", "'Yes'", "No", "No.", "'No'"]:
-                process_job(job, answer)
-            else:
+
+            try:
+                if isinstance(evaluation_result, JobEvaluation):
+                    process_job(job, evaluation_result)
+                else:
+                    print(
+                        f"Job Title: {job_title} failed to process. Invalid response format."
+                    )
+            except json.JSONDecodeError:
                 print(
-                    f"Job Title: {job_title} failed to process.{evaluation_result[-60:]}"
+                    f"Job Title: {job_title} failed to process. Invalid JSON response."
                 )
                 continue
+
         if len(job_data) < job_count:
             print("No more jobs to process. Exiting...")
             break

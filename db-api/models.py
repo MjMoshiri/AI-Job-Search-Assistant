@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Integer
+from sqlalchemy import Column, String, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 from datetime import datetime
@@ -14,9 +14,12 @@ class JobApplication(Base):
     description = Column(String)
     link = Column(String)
     is_qualified = Column(Boolean)
-    is_not_qualified_reason = Column(String)
+    is_processed = Column(Boolean)
+    model_reasoning = Column(String)
+    user_reasoning = Column(String)
     has_applied = Column(Boolean)
-    resume_version = Column(String)
+    resume_notes = Column(String)
+    location = Column(String)
     title = Column(String)
     company = Column(String)
     date_applied = Column(DateTime)

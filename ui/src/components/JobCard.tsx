@@ -12,7 +12,7 @@ interface JobCardProps {
 const JobCard: React.FC<JobCardProps> = ({ job: Ad , onRemove }) => {
     const [resumeVersion, setResumeVersion] = useState('');
     const [isQualified, setIsQualified] = useState(Ad.is_qualified);
-    const [selectedReasons, setSelectedReasons] = useState<string[]>(Ad.is_not_qualified_reason ? Ad.is_not_qualified_reason.split(', ') : []);
+    const [selectedReasons, setSelectedReasons] = useState<string[]>(Ad.user_reasoning ? Ad.user_reasoning.split(', ') : []);
     const [dateApplied, setDateApplied] = useState<Date | null>(null);
     const [isCollapsed, setIsCollapsed] = useState(true);
     const accordionTitleRef = useRef<HTMLHeadingElement>(null);
@@ -21,11 +21,11 @@ const JobCard: React.FC<JobCardProps> = ({ job: Ad , onRemove }) => {
         setDateApplied(new Date());
         const updatedJob = {
             ...Ad,
-            resume_version: resumeVersion,
+            resume_notes: resumeVersion,
             is_qualified: isQualified,
             has_applied: isQualified && selectedReasons.length === 0,
             date_applied: dateApplied!,
-            is_not_qualified_reason: selectedReasons.join(', ')
+            user_reasoning: selectedReasons.join(', ')
         };
         updateJob(updatedJob);
         toggleCollapse();

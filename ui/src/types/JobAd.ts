@@ -4,9 +4,9 @@ export interface JobAd {
     description: string;
     link: string;
     is_qualified: boolean;
-    is_not_qualified_reason: string;
+    user_reasoning: string;
     has_applied: boolean;
-    resume_version: string;
+    resume_notes: string;
     title: string;
     company: string;
     date_applied: Date;
