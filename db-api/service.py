@@ -77,7 +77,7 @@ def get_qualified(page, page_size):
     session = Session()
     try:
         offset = (page - 1) * page_size
-        job_applications = session.query(JobApplication).filter(JobApplication.is_qualified == True, JobApplication.has_applied == None).offset(offset).limit(page_size).all()
+        job_applications = session.query(JobApplication).filter(JobApplication.is_qualified == True, JobApplication.has_applied.is_(None)).offset(offset).limit(page_size).all()
         return job_applications
     except Exception:
         return None
@@ -87,7 +87,7 @@ def get_qualified(page, page_size):
 def count_qualified():
     session = Session()
     try:
-        count = session.query(JobApplication).filter(JobApplication.is_qualified == True, JobApplication.has_applied == None).count()
+        count = session.query(JobApplication).filter(JobApplication.is_qualified == True, JobApplication.has_applied.is_(None)).count()
         return count
     except Exception:
         return None
