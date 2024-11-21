@@ -57,8 +57,8 @@ You will be given a job description. Review the job description and return a JSO
 
 The qualification criteria are as follows:
 - A PhD is not required.
-- The role is not a management position or senior position.
-- If a minimum experience is required, it must be less than 2 years.
+- The role is not a management position or senior position. Which means no Senior, Director, Manager, Staff, etc. in the title.
+- If a minimum experience is required, it must be less than 5 years.
 - The job must be located in California or allow for remote work.
 
 Please assess the job description carefully and ensure the reasoning covers all aspects of the criteria provided.
