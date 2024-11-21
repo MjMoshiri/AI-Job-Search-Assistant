@@ -1,0 +1,6 @@
+webdriver-manager
+requests
+python-dotenv
+openai
+pydantic
+selenium-driverless

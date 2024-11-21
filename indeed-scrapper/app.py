@@ -1,13 +1,9 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium_driverless import webdriver
+from selenium_driverless.types.by import By
 import requests
-import time
 import random
 import json
+import asyncio
 
 BAY_AREA_URL = "https://www.indeed.com/jobs?q=software+engineer&l=San+Francisco+Bay+Area%2C+CA&radius=100&sort=date&fromage=3"
 REMOTE_URL = "https://www.indeed.com/jobs?q=software+engineer&l=Remote&radius=100&sort=date&fromage=3"
@@ -15,20 +11,17 @@ EXPECTED_SAMESITE_VALUES = ["Strict", "Lax", "None"]
 COOKIES_FILE = "indeed-scrapper/cookies.json"
 JOB_POST_URL = "http://localhost:5995/job"
 
-options = webdriver.ChromeOptions()
-service = Service(ChromeDriverManager().install())
 
-
-def load_cookies(driver):
+async def load_cookies(driver):
     with open(COOKIES_FILE, "r") as file:
         cookies = json.load(file)
         for cookie in cookies:
             if cookie.get("sameSite") not in EXPECTED_SAMESITE_VALUES:
                 cookie["sameSite"] = "None"
-            driver.add_cookie(cookie)
+            await driver.add_cookie(cookie)
 
 
-def post_job(job_id, job_title, job_description, link, company, location):
+async def post_job(job_id, job_title, job_description, link, company, location):
     job_details = {
         "id": job_id,
         "description": job_description,
@@ -43,47 +36,54 @@ def post_job(job_id, job_title, job_description, link, company, location):
         print("Job posted successfully")
         return True
     else:
-        print("Failed to post job ", response.status_code)
+        print("Failed to post job", response.status_code)
         return False
 
 
-def scrape_jobs(driver, url):
-    try:
-        driver.get("https://www.indeed.com")
-        load_cookies(driver)
-        driver.get(url)
-        time.sleep(random.randint(2, 8))
-        failure_count = 0
-        page = 0
-        while True:
-            WebDriverWait(driver, 10).until(
-                EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "a[data-jk]"))
-            )
-            job_links = driver.find_elements(By.CSS_SELECTOR, "a[data-jk]")
+async def wait_for_captcha(driver):
+    while True:
+        title = await driver.title
+        if title != "Just a moment...":
+            break
+        print("Please solve the captcha...")
+        await driver.sleep(1)
+
+
+async def scrape_jobs(driver, url):
+    await driver.get("https://www.indeed.com", wait_load=True)
+    await load_cookies(driver)
+    await wait_for_captcha(driver)
+    await driver.get(url)
+    await wait_for_captcha(driver)
+    failure_count = 0
+    page = 0
+    while True:
+        try:
+            await wait_for_captcha(driver)
+            job_links = await driver.find_elements(By.CSS_SELECTOR, "a[data-jk]")
             for job_link in job_links:
-                job_id = job_link.get_attribute("data-jk")
+                job_id = (await job_link.get_attribute("id")).split("_")[1]
                 apply_link = f"https://www.indeed.com/applystart?jk={job_id}"
-                job_title = job_link.find_element(
+                title_element = await job_link.find_element(
                     By.CSS_SELECTOR, "span[title]"
-                ).get_attribute("title")
-                job_link.click()
-                time.sleep(random.randint(2, 8))
-                WebDriverWait(driver, 10).until(
-                    EC.visibility_of_element_located((By.ID, "jobDescriptionText"))
                 )
-                company_name_element = driver.find_element(
+                job_title = await title_element.get_attribute("title")
+                await job_link.click()
+                await driver.sleep(random.randint(2, 4))
+                company_element = await driver.find_element(
                     By.CSS_SELECTOR, 'div[data-testid="inlineHeader-companyName"]'
                 )
-                company_name = company_name_element.text
-                job_description = driver.find_element(By.ID, "jobDescriptionText").text
-
-                company_location_element = driver.find_element(
+                company_name = await company_element.text
+                job_description_element = await driver.find_element(
+                    By.ID, "jobDescriptionText"
+                )
+                job_description = await job_description_element.text
+                location_element = await driver.find_element(
                     By.CSS_SELECTOR,
                     'div[data-testid="inlineHeader-companyLocation"] > div',
                 )
-                location = company_location_element.text
-
-                success = post_job(
+                location = await location_element.text
+                success = await post_job(
                     job_id,
                     job_title,
                     job_description,
@@ -99,19 +99,19 @@ def scrape_jobs(driver, url):
                     print("Failed to post 10 jobs. Exiting...")
                     return
             page += 1
-            driver.get(url + "&start=" + str(page * 10))
-    except Exception as e:
-        print(f"An error occurred: {e}")
+            next_url = f"{url}&start={page * 10}"
+            await driver.get(next_url, wait_load=True)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return
 
 
-def main():
-    driver = webdriver.Chrome(service=service, options=options)
-    try:
-        # scrape_jobs(driver, BAY_AREA_URL)
-        scrape_jobs(driver, REMOTE_URL)
-    finally:
-        driver.quit()
+async def main():
+    options = webdriver.ChromeOptions()
+    async with webdriver.Chrome(options=options) as driver:
+        await scrape_jobs(driver, BAY_AREA_URL)
+        await scrape_jobs(driver, REMOTE_URL)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
