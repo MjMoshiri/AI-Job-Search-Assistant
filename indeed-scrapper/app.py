@@ -53,12 +53,12 @@ async def scrape_jobs(driver, url):
     await driver.get("https://www.indeed.com", wait_load=True)
     await load_cookies(driver)
     await wait_for_captcha(driver)
-    await driver.get(url)
-    await wait_for_captcha(driver)
     failure_count = 0
     page = 0
+    next_url = url
     while True:
         try:
+            await driver.get(next_url, wait_load=True)
             await wait_for_captcha(driver)
             job_links = await driver.find_elements(By.CSS_SELECTOR, "a[data-jk]")
             for job_link in job_links:
@@ -69,7 +69,7 @@ async def scrape_jobs(driver, url):
                 )
                 job_title = await title_element.get_attribute("title")
                 await job_link.click()
-                await driver.sleep(random.randint(2, 4))
+                await asyncio.sleep(random.randint(2, 8))
                 company_element = await driver.find_element(
                     By.CSS_SELECTOR, 'div[data-testid="inlineHeader-companyName"]'
                 )
@@ -91,19 +91,14 @@ async def scrape_jobs(driver, url):
                     company_name,
                     location,
                 )
-                if not success:
-                    failure_count += 1
-                else:
-                    failure_count = 0
+                failure_count = 0 if success else failure_count + 1
                 if failure_count >= 10:
                     print("Failed to post 10 jobs. Exiting...")
                     return
             page += 1
             next_url = f"{url}&start={page * 10}"
-            await driver.get(next_url, wait_load=True)
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return
+        except Exception:
+            continue
 
 
 async def main():
